@@ -1,0 +1,630 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travelz</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        canvas {
+            display: block;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <!-- Drag to rotate • Scroll to zoom -->
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, earth;
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let autoRotate = true;
+        let lastTouchDistance = 0;
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.z = 3;
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 1);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 3, 5);
+            scene.add(directionalLight);
+
+            // Earth
+            const geometry = new THREE.SphereGeometry(1, 64, 64);
+            
+            // Load Earth texture from online source
+            const textureLoader = new THREE.TextureLoader();
+            const earthTexture = textureLoader.load(
+                'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/earth_atmos_2048.jpg',
+                function() {
+                    console.log('Texture loaded successfully');
+                },
+                undefined,
+                function(err) {
+                    console.error('Error loading texture:', err);
+                }
+            );
+
+            const material = new THREE.MeshPhongMaterial({
+                map: earthTexture,
+                shininess: 10
+            });
+
+            earth = new THREE.Mesh(geometry, material);
+            scene.add(earth);
+
+            // Create arc between coordinates
+            createArc(52.374, 4.8897, 4.6097, -74.0818);
+            createArc(4.6097, -74.0818, 29.7604, -95.3698);  // Bogotá, Houston
+            createArc(4.6097, -74.0818, 40.7128, -74.0060);  // Bogotá, New York
+            createArc(40.7128, -74.0060, 37.7749, -122.4194);  // New York, San Francisco
+            createArc(37.7749, -122.4194, 39.7392, -104.9903);  // San Francisco, Denver
+            createArc(37.7749, -122.4194, 29.7604, -95.3698);  // San Francisco, Houston
+            createArc(37.7749, -122.4194, 25.7617, -80.1918);  // San Francisco, Miami
+            createArc(6.2442, -75.5812, 25.7617, -80.1918);  // Medellin, Miami
+            createArc(6.2442, -75.5812, 8.9833, -79.5167);  // Medellin, Panama
+            createArc(6.2442, -75.5812, 10.3910, -75.5143);  // Medellin, Cartagena
+            createArc(6.2442, -75.5812, 11.2401, -74.1940);  // Medellin, Santa Marta
+            createArc(10.3910, -75.5143, 52.374, 4.8897);  // Cartagena, Amsterdam
+            createArc(52.374, 4.8897, 48.8566, 2.3522);  // Amsterdam, Paris
+            createArc(52.5200, 13.4050, 48.8566, 2.3522);  // Berlin, Paris
+            createArc(52.5200, 13.4050, 48.1351, 11.5820);  // Berlin, Munich
+            createArc(48.1351, 11.5820, 35.6762, 139.6503);  // Munich, Tokyo
+            createArc(35.6762, 139.6503, 35.0116, 135.7681);  // Tokyo, Kyoto
+            createArc(52.5200, 13.4050, 41.1496, -8.6110);  // Berlin, Porto
+            createArc(52.5200, 13.4050, 69.6496, 18.9560);  // Berlin, Tromso
+            createArc(52.5200, 13.4050, 25.7617, -80.1918);  // Berlin, Miami
+            createArc(4.6097, -74.0818, 10.3910, -75.5143);  // Bogotá, Cartagena
+            createArc(52.374, 4.8897, 1.3521, 103.8198);  // Amsterdam, Singapore
+            createArc(52.374, 4.8897, 41.3784, 2.1915);  // Amsterdam, Barcelona
+            createArc(52.374, 4.8897, 41.9028, 12.4964);  // Amsterdam, Rome
+            createArc(52.374, 4.8897, 48.1351, 11.5820);  // Amsterdam, Munich
+            createArc(52.5200, 13.4050, 41.3784, 2.1915);  // Berlin, Barcelona
+            createArc(52.5200, 13.4050, 40.4168, -3.7038);  // Berlin, Madrid
+            createArc(48.8566, 2.3522, 41.3784, 2.1915);  // Paris, Barcelona
+            createArc(52.374, 4.8897, -34.6037, -58.3816);  // Amsterdam, Buenos Aires
+            createArc(50.1109, 8.6821, -34.6037, -58.3816);  // Frankfurt, Buenos Aires
+            createArc(52.5200, 13.4050, 51.5074, -0.1278);  // Berlin, London
+            createArc(52.374, 4.8897, 44.8378, -0.5792);  // Amsterdam, Bordeaux
+            createArc(50.1109, 8.6821, 19.4326, -99.1332);  // Frankfurt, Mexico City
+            createArc(19.4326, -99.1332, 6.2442, -75.5812);  // Mexico City, Medellin
+            createArc(25.7617, -80.1918, 48.1351, 11.5820);  // Miami, Munich
+            createArc(50.1109, 8.6821, 4.6097, -74.0818);  // Frankfurt, Bogotá
+            createArc(52.374, 4.8897, 8.9833, -79.5167);  // Amsterdam, Panama
+            createArc(52.5200, 13.4050, 43.5081, 16.4402);  // Berlin, Split
+            createArc(6.2442, -75.5812, 12.5847, -81.7006);  // Medellin, San Andres
+            createArc(40.4168, -3.7038, 4.6097, -74.0818);  // Madrid, Bogota
+            createArc(40.4168, -3.7038, 6.2442, -75.5812);  // Madrid, Medellin
+            createArc(52.374, 4.8897, 40.4168, -3.7038);  // Amsterdam, Madrid
+            createArc(4.6097, -74.0818, 3.4516, -76.5319);   // Bogota, Cali
+            createArc(3.4516, -76.5319, 52.3740, 4.8897);    // Cali, Amsterdam
+            createArc(52.5200, 13.4050, 50.1109, 8.6821);    // Berlin, Frankfurt
+
+            // Land transport arcs
+            createLandArc(4.6097, -74.0818, 5.5444, -73.3576);   // Bogota, Tunja
+            createLandArc(5.5444, -73.3576, 5.6350, -73.5263);   // Tunja, Villa de Leyva
+            createLandArc(37.3861, -122.0839, 36.3615, -121.8563);   // Mountain View, Big Sur
+            createLandArc(36.3615, -121.8563, 36.6002, -121.8947);   // Big Sur, Monterey
+            createLandArc(37.3861, -122.0839, 34.0522, -118.2437);   // Mountain View, Los Angeles
+            createLandArc(25.7617, -80.1918, 28.5383, -81.3792);     // Miami, Orlando
+            createLandArc(25.7617, -80.1918, 24.5551, -81.7800);     // Miami, Key West
+            createLandArc(37.3861, -122.0839, 37.7749, -122.4194);   // Mountain View, San Francisco
+            createLandArc(7.1193, -73.1227, 11.2408, -74.1990);   // Bucaramanga, Santa Marta
+            createLandArc(52.5200, 13.4050, 51.1079, 17.0385);    // Berlin, Wroclaw
+            createLandArc(51.1079, 17.0385, 50.0647, 19.9450);    // Wroclaw, Krakow
+            createLandArc(52.5200, 13.4050, 52.2297, 21.0122);    // Berlin, Warsaw
+            createLandArc(44.8378, -0.5792, 43.6047, 1.4442);    // Bordeaux, Toulouse
+            createLandArc(43.6047, 1.4442, 43.9270, 2.1480);     // Toulouse, Albi
+            createLandArc(51.5074, -0.1278, 51.7520, -1.2577);   // London, Oxford
+            createLandArc(52.3740, 4.8897, 52.0907, 5.1214);     // Amsterdam, Utrecht
+            createLandArc(52.3740, 4.8897, 50.8514, 5.6910);     // Amsterdam, Maastricht
+            createLandArc(50.1109, 8.6821, 48.7758, 9.1829);     // Frankfurt, Stuttgart
+            createLandArc(35.0116, 135.7681, 34.8151, 134.6853);   // Kyoto, Himeji
+            createLandArc(36.5613, 136.6562, 36.2653, 136.8986);   // Kanazawa, Shirakawa-go
+            createLandArc(36.5613, 136.6562, 35.6762, 139.6503);   // Kanazawa, Tokyo
+            createLandArc(35.6762, 139.6503, 38.2682, 140.8694);   // Tokyo, Sendai
+            createLandArc(38.2682, 140.8694, 38.3704, 141.0618);   // Sendai, Matsushima
+            createLandArc(38.3704, 141.0618, 40.8221, 140.7474);   // Matsushima, Aomori
+            createLandArc(40.8221, 140.7474, 41.7687, 140.7288);   // Aomori, Hakodate
+            createLandArc(50.8503, 4.3517, 51.2093, 3.2247);   // Brussels, Bruges
+            createLandArc(48.8167, 11.8500, 49.0134, 12.1016);   // Abensberg, Regensburg
+            createLandArc(52.5200, 13.4050, 50.0755, 14.4378);   // Berlin, Prague
+            createLandArc(52.3740, 4.8897, 51.9244, 4.4777);    // Amsterdam, Rotterdam
+            createLandArc(51.9244, 4.4777, 50.8503, 4.3517);    // Rotterdam, Brussels
+            createLandArc(51.8437, 5.8520, 50.9375, 6.9603);    // Nijmegen, Köln
+            createLandArc(52.3740, 4.8897, 52.0907, 5.1214);   // Amsterdam, Utrecht
+            createLandArc(50.9375, 6.9603, 50.1109, 8.6821);   // Köln, Frankfurt
+            createLandArc(6.2442, -75.5812, 5.7489, -75.6067);   // Medellin, La Pintada
+            createLandArc(5.7489, -75.6067, 5.0689, -75.5174);   // La Pintada, Manizales
+            createLandArc(6.2442, -75.5812, 6.5569, -75.8286);   // Medellin, Santa Fe de Antioquia
+            createLandArc(6.2442, -75.5812, 4.6097, -74.0818);   // Medellin, Bogota
+            createLandArc(4.6097, -74.0818, 7.1193, -73.1227);   // Bogota, Bucaramanga
+            createLandArc(7.1193, -73.1227, 11.2408, -74.1990);  // Bucaramanga, Santa Marta
+            createLandArc(4.6097, -74.0818, 4.3365, -74.3633);   // Bogota, Fusagasugá
+            createLandArc(5.6350, -73.5263, 7.1193, -73.1227);   // Villa de Leyva, Bucaramanga
+            createLandArc(7.1193, -73.1227, 6.5548, -73.1331);   // Bucaramanga, San Gil
+            createLandArc(35.0116, 135.7681, 36.5613, 136.6562);   // Kyoto, Kanazawa
+            createLandArc(52.0907, 5.1214, 51.8437, 5.8520);   // Utrecht, Nijmegen
+            createLandArc(50.8503, 4.3517, 48.8566, 2.3522);   // Brussels, Paris
+            createLandArc(52.5200, 13.4050, 51.3397, 12.3731);   // Berlin, Leipzig
+            createLandArc(51.3397, 12.3731, 50.9848, 11.0299);   // Leipzig, Erfurt
+            createLandArc(50.9848, 11.0299, 49.7913, 9.9534);    // Erfurt, Würzburg
+            createLandArc(49.7913, 9.9534, 49.3780, 10.1797);   // Würzburg, Rothenburg ob der Tauber
+            createLandArc(49.3780, 10.1797, 49.3000, 10.5833);   // Rothenburg, Ansbach
+            createLandArc(49.3000, 10.5833, 49.4521, 11.0767);   // Ansbach, Nuremberg
+            createLandArc(49.4521, 11.0767, 50.9848, 11.0299);   // Nuremberg, Erfurt
+            createLandArc(48.1351, 11.5820, 48.4029, 11.7480);   // Munich, Freising
+            createLandArc(48.4029, 11.7480, 48.8167, 11.8500);   // Freising, Abensberg
+            createLandArc(48.8167, 11.8500, 49.0134, 12.1016);   // Abensberg, Regensburg
+            createLandArc(48.1310, 8.2326, 47.9990, 7.8421);     // Triberg, Freiburg
+            createLandArc(50.1109, 8.6821, 49.0069, 8.4037);   // Frankfurt, Karlsruhe
+            createLandArc(49.0711, 7.7024, 48.9775, 8.1446);     // Kandel, Lauterbourg
+            createLandArc(49.0711, 7.7024, 49.0069, 8.4037);     // Kandel, Karlsruhe
+            createLandArc(49.0711, 7.7024, 49.3988, 8.6724);     // Kandel, Heidelberg
+            createLandArc(50.1109, 8.6821, 48.4738, 7.9445);   // Frankfurt, Offenburg
+            createLandArc(48.4738, 7.9445, 48.1310, 8.2326);   // Offenburg, Triberg
+            createLandArc(52.5200, 13.4050, 50.9848, 11.0299);   // Berlin, Erfurt
+            createLandArc(50.9848, 11.0299, 50.1109, 8.6821);    // Erfurt, Frankfurt
+
+
+            // Overlapping transport arcs
+            createMixedArc(6.2442, -75.5812, 4.6097, -74.0818);  // Medellin, Bogotá
+            createMixedArc(6.2442, -75.5812, 7.1193, -73.1227);   // Medellin, Bucaramanga
+            createMixedArc(52.374, 4.8897, 52.5200, 13.4050);  // Berlin, Amsterdam
+
+            // Add city markers
+            addCityMarker(6.2442, -75.5812);   // Medellin
+            addCityMarker(4.6097, -74.0818);   // Bogota
+            addCityMarker(10.3910, -75.5143);  // Cartagena
+            addCityMarker(11.2408, -74.1990);  // Santa Marta
+            addCityMarker(5.5444, -73.3576);   // Tunja
+            addCityMarker(5.6350, -73.5263);   // Villa de Leyva
+            addCityMarker(5.0689, -75.5174);   // Manizales
+            addCityMarker(6.5569, -75.8286);   // Santa Fe de Antioquia
+            addCityMarker(6.5548, -73.1331);   // San Gil
+            addCityMarker(12.5847, -81.7006);  // San Andres
+            addCityMarker(19.4326, -99.1332);   // Mexico DF
+            addCityMarker(-34.6037, -58.3816);  // Buenos Aires
+            addCityMarker(25.7617, -80.1918);   // Miami
+            addCityMarker(40.7128, -74.0060);   // New York
+            addCityMarker(37.7749, -122.4194);  // San Francisco
+            addCityMarker(29.7604, -95.3698);   // Houston
+            addCityMarker(39.7392, -104.9903);  // Denver
+            addCityMarker(28.5383, -81.3792);   // Orlando
+            addCityMarker(36.6002, -121.8947);  // Monterey
+            addCityMarker(36.3615, -121.8563);  // Big Sur
+            addCityMarker(24.5551, -81.7800);   // Key West
+            addCityMarker(51.1079, 17.0385);   // Wroclaw
+            addCityMarker(50.0647, 19.9450);   // Krakow
+            addCityMarker(52.2297, 21.0122);   // Warsaw
+            addCityMarker(49.8728, 8.6512);    // Darmstadt
+            addCityMarker(50.1109, 8.6821);    // Frankfurt
+            addCityMarker(52.5200, 13.4050);   // Berlin
+            addCityMarker(52.3906, 13.0645);   // Potsdam
+            addCityMarker(50.9375, 6.9603);    // Köln
+            addCityMarker(48.1351, 11.5820);   // Munich
+            addCityMarker(48.1310, 8.2326);    // Triberg
+            addCityMarker(49.3780, 10.1797);   // Rothenburg ob der Tauber
+            addCityMarker(49.4521, 11.0767);   // Nuremberg
+            addCityMarker(48.8167, 11.8500);   // Abensberg
+            addCityMarker(48.4029, 11.7480);   // Freising
+            addCityMarker(49.0134, 12.1016);   // Regensburg
+            addCityMarker(48.8566, 2.3522);    // Paris
+            addCityMarker(44.8378, -0.5792);   // Bordeaux
+            addCityMarker(43.6047, 1.4442);    // Toulouse
+            addCityMarker(43.9270, 2.1480);    // Albi
+            addCityMarker(40.4168, -3.7038);   // Madrid
+            addCityMarker(41.3851, 2.1734);    // Barcelona
+            addCityMarker(52.3740, 4.8897);    // Amsterdam
+            addCityMarker(52.0907, 5.1214);    // Utrecht
+            addCityMarker(51.9244, 4.4777);    // Rotterdam
+            addCityMarker(52.3874, 4.6462);    // Haarlem
+            addCityMarker(51.8437, 5.8520);    // Nijmegen
+            addCityMarker(69.6496, 18.9560);   // Tromso
+            addCityMarker(43.5081, 16.4402);   // Split
+            addCityMarker(41.1496, -8.6110);   // Porto
+            addCityMarker(51.5074, -0.1278);   // London
+            addCityMarker(51.7520, -1.2577);   // Oxford
+            addCityMarker(50.0755, 14.4378);   // Prague
+            addCityMarker(35.6762, 139.6503);  // Tokyo
+            addCityMarker(35.0116, 135.7681);  // Kyoto
+            addCityMarker(34.8151, 134.6853);  // Himeji
+            addCityMarker(36.5613, 136.6562);  // Kanazawa
+            addCityMarker(38.2682, 140.8694);  // Sendai
+            addCityMarker(40.8221, 140.7474);  // Aomori
+            addCityMarker(41.7687, 140.7288);  // Hakodate
+            addCityMarker(1.3521, 103.8198);   // Singapore
+            addCityMarker(48.7758, 9.1829);   // Stuttgart
+            addCityMarker(50.8514, 5.6910);   // Maastricht
+            addCityMarker(51.2093, 3.2247);   // Bruges
+            addCityMarker(41.9028, 12.4964);    // Rome
+            addCityMarker(8.9833, -79.5167);    // Panama City
+            addCityMarker(7.1193, -73.1227);    // Bucaramanga
+            addCityMarker(37.3861, -122.0839);  // Mountain View
+            addCityMarker(34.0522, -118.2437);  // Los Angeles
+            addCityMarker(5.7489, -75.6067);  // La Pintada
+            addCityMarker(4.3365, -74.3633);  // Fusagasugá
+            addCityMarker(36.2653, 136.8986);  // Shirakawa-go
+            addCityMarker(47.9990, 7.8421);  // Freiburg
+            addCityMarker(49.3000, 10.5833);  // Ansbach
+            addCityMarker(48.9775, 8.1446);   // Lauterbourg
+            addCityMarker(49.0069, 8.4037);    // Karlsruhe
+            addCityMarker(49.3988, 8.6724);    // Heidelberg
+            addCityMarker(50.0000, 8.2711);    // Mainz
+            addCityMarker(50.0826, 8.2410);    // Wiesbaden
+            addCityMarker(49.0711, 7.7024);    // Kandel
+
+
+            // Add transit markers
+            addTransitMarker(19.4326, -99.1332);   // Mexico City
+            addTransitMarker(40.7128, -74.0060);   // New York
+            addTransitMarker(8.9833, -79.5167);    // Panama
+            addTransitMarker(29.7604, -95.3698);   // Houston
+            addTransitMarker(10.3910, -75.5143);   // Cartagena
+            addTransitMarker(40.4168, -3.7038);    // Madrid
+            addTransitMarker(48.1351, 11.5820);    // Munich
+            addTransitMarker(3.4516, -76.5319);    // Cali
+            addTransitMarker(50.8503, 4.3517);     // Brussels
+            addTransitMarker(51.3397, 12.3731);   // Leipzig
+            addTransitMarker(50.9848, 11.0299);   // Erfurt
+            addTransitMarker(49.7913, 9.9534);    // Würzburg
+            addTransitMarker(48.4738, 7.9445);   // Offenburg
+            addTransitMarker(52.4064, 16.9252);   // Poznan
+
+            // Add wish markers
+            addWishMarker(53.5511, 9.9937);    // Hamburg
+            addWishMarker(53.2194, 6.5665);    // Groningen
+            addWishMarker(33.5902, 130.4017);  // Fukuoka
+            addWishMarker(53.8686, 10.6866);    // Lübeck
+            addWishMarker(53.0793, 8.8017);     // Bremen
+            addWishMarker(54.0924, 13.3873);    // Greifswald
+            addWishMarker(53.4285, 14.5528);    // Stettin (Szczecin)
+            addWishMarker(54.3520, 18.6466);    // Gdansk
+            addWishMarker(39.4699, -0.3763);    // Valencia
+            addWishMarker(48.6361, -1.5115);    // Mont Saint-Michel
+            addWishMarker(55.9533, -3.1883);    // Edinburgh
+            addWishMarker(43.6511, -79.3470);   // Toronto
+            addWishMarker(45.5017, -73.5673);   // Montreal
+            addWishMarker(-33.4489, -70.6693);  // Santiago de Chile
+            addWishMarker(45.4642, 9.1900);     // Milan
+            addWishMarker(45.4408, 12.3155);    // Venice
+            addWishMarker(59.9139, 10.7522);    // Oslo
+            addWishMarker(55.6761, 12.5683);    // Copenhagen
+            addWishMarker(47.3769, 8.5417);     // Zurich
+            addWishMarker(47.5596, 7.5886);     // Basel
+            addWishMarker(41.0082, 28.9784);    // Istanbul
+            addWishMarker(53.3331, -6.2489);    // Dublin
+            addWishMarker(59.3293, 18.0686);    // Stockholm
+            addWishMarker(37.9838, 23.7275);    // Athens
+            addWishMarker(42.6507, 18.0944);    // Dubrovnik
+            addWishMarker(44.8176, 20.4569);    // Belgrade
+            addWishMarker(37.5665, 126.9780);    // Seoul
+            addWishMarker(22.3193, 114.1694);    // Hong Kong
+            addWishMarker(25.0330, 121.5654);    // Taipei
+            addWishMarker(-33.8688, 151.2093);   // Sydney
+            addWishMarker(-35.2809, 149.1300);   // Canberra
+            addWishMarker(-31.9505, 115.8605);   // Perth
+            addWishMarker(51.2277, 6.7735);    // Düsseldorf
+            addWishMarker(47.6779, 9.1730);    // Konstanz
+            addWishMarker(48.5734, 7.7521);   // Strasbourg
+
+
+
+
+
+
+
+
+
+            // Mouse controls
+            renderer.domElement.addEventListener('mousedown', onMouseDown);
+            renderer.domElement.addEventListener('mousemove', onMouseMove);
+            renderer.domElement.addEventListener('mouseup', onMouseUp);
+            renderer.domElement.addEventListener('wheel', onWheel);
+
+            // Touch controls
+            renderer.domElement.addEventListener('touchstart', onTouchStart, { passive: false });
+            renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
+            renderer.domElement.addEventListener('touchend', onTouchEnd);
+
+            // Window resize
+            window.addEventListener('resize', onWindowResize);
+
+            animate();
+        }
+
+        function latLonToVector3(lat, lon, radius) {
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lon + 180) * (Math.PI / 180);
+
+            const x = -(radius * Math.sin(phi) * Math.cos(theta));
+            const z = (radius * Math.sin(phi) * Math.sin(theta));
+            const y = (radius * Math.cos(phi));
+
+            return new THREE.Vector3(x, y, z);
+        }
+
+        function createArc(lat1, lon1, lat2, lon2) {
+            const radius = 1; // Earth sphere radius
+            const arcRadius = 1.005; // Just slightly above Earth surface
+
+            // Convert lat/lon to 3D coordinates
+            const start = latLonToVector3(lat1, lon1, radius);
+            const end = latLonToVector3(lat2, lon2, radius);
+
+            // Create curve with multiple points for smooth arc
+            const numPoints = 100;
+            const points = [];
+
+            for (let i = 0; i <= numPoints; i++) {
+                const t = i / numPoints;
+                
+                // Interpolate between start and end on the sphere surface
+                const point = new THREE.Vector3().lerpVectors(start, end, t);
+                
+                // Normalize and project to sphere surface (great circle path)
+                point.normalize().multiplyScalar(arcRadius);
+                
+                points.push(point);
+            }
+
+            // Create the arc line
+            const curve = new THREE.CatmullRomCurve3(points);
+            const arcPoints = curve.getPoints(200);
+            const arcGeometry = new THREE.BufferGeometry().setFromPoints(arcPoints);
+            
+            const arcMaterial = new THREE.LineBasicMaterial({
+                color: 0xff6b35,
+                linewidth: 2,
+                transparent: true,
+                opacity: 0.9
+            });
+
+            const arcLine = new THREE.Line(arcGeometry, arcMaterial);
+            earth.add(arcLine); // Add to earth so it rotates with it
+        }
+
+        function createLandArc(lat1, lon1, lat2, lon2) {
+            const radius = 1; // Earth sphere radius
+            const arcRadius = 1.005; // Just slightly above Earth surface
+
+            // Convert lat/lon to 3D coordinates
+            const start = latLonToVector3(lat1, lon1, radius);
+            const end = latLonToVector3(lat2, lon2, radius);
+
+            // Create curve with multiple points for smooth arc
+            const numPoints = 100;
+            const points = [];
+
+            for (let i = 0; i <= numPoints; i++) {
+                const t = i / numPoints;
+                
+                // Interpolate between start and end on the sphere surface
+                const point = new THREE.Vector3().lerpVectors(start, end, t);
+                
+                // Normalize and project to sphere surface (great circle path)
+                point.normalize().multiplyScalar(arcRadius);
+                
+                points.push(point);
+            }
+
+            // Create the arc line
+            const curve = new THREE.CatmullRomCurve3(points);
+            const arcPoints = curve.getPoints(200);
+            const arcGeometry = new THREE.BufferGeometry().setFromPoints(arcPoints);
+            
+            const arcMaterial = new THREE.LineBasicMaterial({
+                color: 0x00FF00,  // Green color for land transport
+                linewidth: 2,
+                transparent: true,
+                opacity: 0.9
+            });
+
+            const arcLine = new THREE.Line(arcGeometry, arcMaterial);
+            earth.add(arcLine); // Add to earth so it rotates with it
+        }
+
+        function createMixedArc(lat1, lon1, lat2, lon2) {
+            const radius = 1; // Earth sphere radius
+            const arcRadius = 1.005; // Just slightly above Earth surface
+
+            // Convert lat/lon to 3D coordinates
+            const start = latLonToVector3(lat1, lon1, radius);
+            const end = latLonToVector3(lat2, lon2, radius);
+
+            // Create curve with multiple points for smooth arc
+            const numPoints = 100;
+            const points = [];
+
+            for (let i = 0; i <= numPoints; i++) {
+                const t = i / numPoints;
+                
+                // Interpolate between start and end on the sphere surface
+                const point = new THREE.Vector3().lerpVectors(start, end, t);
+                
+                // Normalize and project to sphere surface (great circle path)
+                point.normalize().multiplyScalar(arcRadius);
+                
+                points.push(point);
+            }
+
+            // Create the arc line
+            const curve = new THREE.CatmullRomCurve3(points);
+            const arcPoints = curve.getPoints(200);
+            const arcGeometry = new THREE.BufferGeometry().setFromPoints(arcPoints);
+            
+            const arcMaterial = new THREE.LineBasicMaterial({
+                color: 0xFFFF00,  // Yellow color for overlapping transport
+                linewidth: 2,
+                transparent: true,
+                opacity: 0.9
+            });
+
+            const arcLine = new THREE.Line(arcGeometry, arcMaterial);
+            earth.add(arcLine); // Add to earth so it rotates with it
+        }
+
+        function addCityMarker(lat, lon) {
+            addMarker(lat, lon, 0x90EE90) // Light green
+        }
+
+        function addTransitMarker(lat, lon) {
+            addMarker(lat, lon, 0x00FFFF) // Light blue
+        }
+
+        function addWishMarker(lat, lon) {
+            addMarker(lat, lon, 0xFFFFFF) // White
+        }
+        
+        function addMarker(lat, lon, color) {
+            const radius = 1.005; // Same as arc radius
+            const position = latLonToVector3(lat, lon, radius);
+            
+            const markerGeometry = new THREE.CircleGeometry(0.0015, 32);
+            const markerMaterial = new THREE.MeshBasicMaterial({
+                color: color,
+                side: THREE.DoubleSide
+            });
+            
+            const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+            marker.position.copy(position);
+            
+            // Make the circle face outward from the Earth's center
+            marker.lookAt(0, 0, 0);
+            marker.rotateY(Math.PI);
+            
+            earth.add(marker);
+        }
+
+        function onMouseDown(e) {
+            isDragging = true;
+            autoRotate = false;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        }
+
+        function onMouseMove(e) {
+            if (isDragging) {
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+
+                earth.rotation.y += deltaX * 0.005;
+                earth.rotation.x += deltaY * 0.005;
+
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            }
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+        }
+
+        function onWheel(e) {
+            e.preventDefault();
+            camera.position.z += e.deltaY * 0.001;
+            camera.position.z = Math.max(1.2, Math.min(10, camera.position.z));
+        }
+
+        let touchStartPos = { x: 0, y: 0 };
+
+        function onTouchStart(e) {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                autoRotate = false;
+                touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                previousMousePosition = touchStartPos;
+            } else if (e.touches.length === 2) {
+                isDragging = false;
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
+            }
+        }
+
+        function onTouchMove(e) {
+            e.preventDefault();
+            
+            if (e.touches.length === 1 && isDragging) {
+                const deltaX = e.touches[0].clientX - previousMousePosition.x;
+                const deltaY = e.touches[0].clientY - previousMousePosition.y;
+
+                earth.rotation.y += deltaX * 0.005;
+                earth.rotation.x += deltaY * 0.005;
+
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            } else if (e.touches.length === 2) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (lastTouchDistance > 0) {
+                    const delta = distance - lastTouchDistance;
+                    camera.position.z -= delta * 0.01;
+                    camera.position.z = Math.max(1.2, Math.min(10, camera.position.z));
+                }
+                
+                lastTouchDistance = distance;
+            }
+        }
+
+        function onTouchEnd() {
+            isDragging = false;
+            lastTouchDistance = 0;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Auto-rotation only if not manually dragged
+            if (autoRotate && !isDragging) {
+                earth.rotation.y += 0.001;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+</html>
