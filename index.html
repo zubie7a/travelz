@@ -92,7 +92,7 @@
             // City coordinates map
             const cities = {
                 'Amsterdam': [52.374, 4.8897],
-                'Bogotá': [4.6097, -74.0818],
+                'Bogota': [4.6097, -74.0818],
                 'Houston': [29.7604, -95.3698],
                 'New York': [40.7128, -74.0060],
                 'San Francisco': [37.7749, -122.4194],
@@ -135,9 +135,9 @@
                 'Warsaw': [52.2297, 21.0122],
                 'Darmstadt': [49.8728, 8.6512],
                 'Potsdam': [52.3906, 13.0645],
-                'Köln': [50.9375, 6.9603],
+                'Koln': [50.9375, 6.9603],
                 'Triberg': [48.1310, 8.2326],
-                'Rothenburg ob der Tauber': [49.3780, 10.1797],
+                'Rothenburg': [49.3780, 10.1797],
                 'Nuremberg': [49.4521, 11.0767],
                 'Abensberg': [48.8167, 11.8500],
                 'Freising': [48.4029, 11.7480],
@@ -161,7 +161,7 @@
                 'Manizales': [5.0689, -75.5174],
                 'Santa Fe de Antioquia': [6.5569, -75.8286],
                 'San Gil': [6.5548, -73.1331],
-                'Fusagasugá': [4.3365, -74.3633],
+                'Fusagasuga': [4.3365, -74.3633],
                 'Shirakawa-go': [36.2653, 136.8986],
                 'Freiburg': [47.9990, 7.8421],
                 'Ansbach': [49.3000, 10.5833],
@@ -174,7 +174,7 @@
                 'Brussels': [50.8503, 4.3517],
                 'Leipzig': [51.3397, 12.3731],
                 'Erfurt': [50.9848, 11.0299],
-                'Würzburg': [49.7913, 9.9534],
+                'Wurzburg': [49.7913, 9.9534],
                 'Offenburg': [48.4738, 7.9445],
                 'Poznan': [52.4064, 16.9252],
                 'Hamburg': [53.5511, 9.9937],
@@ -264,9 +264,9 @@
             }
 
             // Create arc between coordinates
-            createArcBetween('Amsterdam', 'Bogotá');
-            createArcBetween('Bogotá', 'Houston');
-            createArcBetween('Bogotá', 'New York');
+            createArcBetween('Amsterdam', 'Bogota');
+            createArcBetween('Bogota', 'Houston');
+            createArcBetween('Bogota', 'New York');
             createArcBetween('New York', 'San Francisco');
             createArcBetween('San Francisco', 'Denver');
             createArcBetween('San Francisco', 'Houston');
@@ -284,7 +284,7 @@
             createArcBetween('Berlin', 'Porto');
             createArcBetween('Berlin', 'Tromso');
             createArcBetween('Berlin', 'Miami');
-            createArcBetween('Bogotá', 'Cartagena');
+            createArcBetween('Bogota', 'Cartagena');
             createArcBetween('Amsterdam', 'Singapore');
             createArcBetween('Amsterdam', 'Barcelona');
             createArcBetween('Amsterdam', 'Rome');
@@ -299,19 +299,19 @@
             createArcBetween('Frankfurt', 'Mexico City');
             createArcBetween('Mexico City', 'Medellin');
             createArcBetween('Miami', 'Munich');
-            createArcBetween('Frankfurt', 'Bogotá');
+            createArcBetween('Frankfurt', 'Bogota');
             createArcBetween('Amsterdam', 'Panama');
             createArcBetween('Berlin', 'Split');
             createArcBetween('Medellin', 'San Andres');
-            createArcBetween('Madrid', 'Bogotá');
+            createArcBetween('Madrid', 'Bogota');
             createArcBetween('Madrid', 'Medellin');
             createArcBetween('Amsterdam', 'Madrid');
-            createArcBetween('Bogotá', 'Cali');
+            createArcBetween('Bogota', 'Cali');
             createArcBetween('Cali', 'Amsterdam');
             createArcBetween('Berlin', 'Frankfurt');
 
             // Land transport arcs
-            createLandArcBetween('Bogotá', 'Tunja');
+            createLandArcBetween('Bogota', 'Tunja');
             createLandArcBetween('Tunja', 'Villa de Leyva');
             createLandArcBetween('Mountain View', 'Big Sur');
             createLandArcBetween('Big Sur', 'Monterey');
@@ -347,10 +347,10 @@
             createLandArcBetween('Medellin', 'La Pintada');
             createLandArcBetween('La Pintada', 'Manizales');
             createLandArcBetween('Medellin', 'Santa Fe de Antioquia');
-            createLandArcBetween('Medellin', 'Bogotá');
-            createLandArcBetween('Bogotá', 'Bucaramanga');
+            createLandArcBetween('Medellin', 'Bogota');
+            createLandArcBetween('Bogota', 'Bucaramanga');
             createLandArcBetween('Bucaramanga', 'Santa Marta');
-            createLandArcBetween('Bogotá', 'Fusagasugá');
+            createLandArcBetween('Bogota', 'Fusagasuga');
             createLandArcBetween('Villa de Leyva', 'Bucaramanga');
             createLandArcBetween('Bucaramanga', 'San Gil');
             createLandArcBetween('Kyoto', 'Kanazawa');
@@ -359,8 +359,8 @@
             createLandArcBetween('Berlin', 'Leipzig');
             createLandArcBetween('Leipzig', 'Erfurt');
             createLandArcBetween('Erfurt', 'Würzburg');
-            createLandArcBetween('Würzburg', 'Rothenburg ob der Tauber');
-            createLandArcBetween('Rothenburg ob der Tauber', 'Ansbach');
+            createLandArcBetween('Wurzburg', 'Rothenburg');
+            createLandArcBetween('Rothenburg', 'Ansbach');
             createLandArcBetween('Ansbach', 'Nuremberg');
             createLandArcBetween('Nuremberg', 'Erfurt');
             createLandArcBetween('Munich', 'Freising');
@@ -378,13 +378,13 @@
 
 
             // Overlapping transport arcs
-            createMixedArcBetween('Medellin', 'Bogotá');
+            createMixedArcBetween('Medellin', 'Bogota');
             createMixedArcBetween('Medellin', 'Bucaramanga');
             createMixedArcBetween('Amsterdam', 'Berlin');
 
             // Add city markers
             addCityMarkerByName('Medellin');
-            addCityMarkerByName('Bogotá');
+            addCityMarkerByName('Bogota');
             addCityMarkerByName('Cartagena');
             addCityMarkerByName('Santa Marta');
             addCityMarkerByName('Tunja');
@@ -411,10 +411,10 @@
             addCityMarkerByName('Frankfurt');
             addCityMarkerByName('Berlin');
             addCityMarkerByName('Potsdam');
-            addCityMarkerByName('Köln');
+            addCityMarkerByName('Koln');
             addCityMarkerByName('Munich');
             addCityMarkerByName('Triberg');
-            addCityMarkerByName('Rothenburg ob der Tauber');
+            addCityMarkerByName('Rothenburg');
             addCityMarkerByName('Nuremberg');
             addCityMarkerByName('Abensberg');
             addCityMarkerByName('Freising');
@@ -453,7 +453,7 @@
             addCityMarkerByName('Mountain View');
             addCityMarkerByName('Los Angeles');
             addCityMarkerByName('La Pintada');
-            addCityMarkerByName('Fusagasugá');
+            addCityMarkerByName('Fusagasuga');
             addCityMarkerByName('Shirakawa-go');
             addCityMarkerByName('Freiburg');
             addCityMarkerByName('Ansbach');
@@ -476,7 +476,7 @@
             addTransitMarkerByName('Brussels');
             addTransitMarkerByName('Leipzig');
             addTransitMarkerByName('Erfurt');
-            addTransitMarkerByName('Würzburg');
+            addTransitMarkerByName('Wurzburg');
             addTransitMarkerByName('Offenburg');
             addTransitMarkerByName('Poznan');
 
