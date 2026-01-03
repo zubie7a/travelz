@@ -2,7 +2,9 @@
 #### 2025
 
 ## TravelZ
-Visualization of personal air and land travel routes on a 3D globe using ThreeJS. Try it at [https://zubie7a.github.io/travelz/](https://zubie7a.github.io/travelz/)
+Visualization of personal air and land travel routes on a 3D globe using ThreeJS.
+
+Try it at [https://zubie7a.github.io/travelz/](https://zubie7a.github.io/travelz/)
 
 [![01]](https://zubie7a.github.io/travelz/)
 
