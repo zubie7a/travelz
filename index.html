@@ -213,7 +213,10 @@
                 'Konstanz': [47.6779, 9.1730],
                 'Strasbourg': [48.5734, 7.7521],
                 'Oxford': [51.7520, -1.2577],
-                'Prague': [50.0755, 14.4378]
+                'Prague': [50.0755, 14.4378],
+                'Asturias': [43.5636, -6.0346],
+                'Gijon': [43.53573, -5.66152],
+                'Oviedo': [43.3603, -5.8448]
             };
 
             // Helper function to get coordinates from city name
@@ -309,6 +312,7 @@
             createArcBetween('Bogota', 'Cali');
             createArcBetween('Cali', 'Amsterdam');
             createArcBetween('Berlin', 'Frankfurt');
+            createArcBetween('Barcelona', 'Asturias');
 
             // Land transport arcs
             createLandArcBetween('Bogota', 'Tunja');
@@ -375,6 +379,9 @@
             createLandArcBetween('Offenburg', 'Triberg');
             createLandArcBetween('Berlin', 'Erfurt');
             createLandArcBetween('Erfurt', 'Frankfurt');
+            createLandArcBetween('Asturias', 'Gijon');
+            createLandArcBetween('Gijon', 'Oviedo');
+            createLandArcBetween('Oviedo', 'Asturias');
 
 
             // Overlapping transport arcs
@@ -464,6 +471,9 @@
             addCityMarkerByName('Mainz');
             addCityMarkerByName('Wiesbaden');
             addCityMarkerByName('Kandel');
+            addCityMarkerByName('Asturias');
+            addCityMarkerByName('Gijon');
+            addCityMarkerByName('Oviedo');
 
 
             // Add transit markers
